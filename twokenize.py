@@ -10,7 +10,7 @@ This tokenizer code has gone through a long history:
 (2a) Kevin Gimpel and Daniel Mills modified it for POS tagging for the CMU ARK Twitter POS Tagger
 (2b) Jason Baldridge and David Snyder ported it to Scala
 (3) Brendan bugfixed the Scala port and merged with POS-specific changes
-    for the CMU ARK Twitter POS Tagger  
+    for the CMU ARK Twitter POS Tagger
 (4) Tobi Owoputi ported it back to Java and added many improvements (2012-06)
 
 Current home is http://github.com/brendano/ark-tweet-nlp and http://www.ark.cs.cmu.edu/TweetNLP
@@ -88,6 +88,11 @@ sadMouths = r"[\(\[\{]+"
 tongue = "[pPd3]+"
 otherMouths = r"(?:[oO]+|[/\\]+|[vV]+|[Ss]+|[|]+)" # remove forward slash if http://'s aren't cleaned
 
+# Emoijis via Martijn Peters
+# http://stackoverflow.com/a/26568779/1599229
+Emojis = u'\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f\ude80-\udeff]|[\u2600-\u26FF\u2700-\u27BF]+'.encode('utf-8')
+
+
 # mouth repetition examples:
 # @aliciakeys Put it in a love song :-))
 # @hellocalyclops =))=))=)) Oh well
@@ -122,7 +127,7 @@ emoticon = regex_or(
 
         #inspired by http://en.wikipedia.org/wiki/User:Scapler/emoticons#East_Asian_style
         eastEmote.replace("2", "1", 1), basicface,
-        # iOS 'emoji' characters (some smileys, some symbols) [\ue001-\uebbb]  
+        # iOS 'emoji' characters (some smileys, some symbols) [\ue001-\uebbb]
         # TODO should try a big precompiled lexicon from Wikipedia, Dan Ramage told me (BTO) he does this
 
         # myleott: o.O and O.o are two of the biggest sources of differences
@@ -139,7 +144,7 @@ Arrows = regex_or(r"(?:<*[-―—=]*>+|<+[-―—=]*>*)", u"[\u2190-\u21ff]+".en
 # "hello (#hashtag)" ==> "hello ( #hashtag )"  RIGHT
 # "hello (@person)" ==> "hello (@person )"  WRONG
 # "hello (@person)" ==> "hello ( @person )"  RIGHT
-# ... Some sort of weird interaction with edgepunct I guess, because edgepunct 
+# ... Some sort of weird interaction with edgepunct I guess, because edgepunct
 # has poor content-symbol detection.
 
 # This also gets #1 #40 which probably aren't hashtags .. but good as tokens.
@@ -158,6 +163,7 @@ Email = regex_or("(?<=(?:\W))", "(?<=(?:^))") + r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-
 # Additionally, these things are "protected", meaning they shouldn't be further split themselves.
 Protected  = re.compile(
     unicode(regex_or(
+        Emojis,
         Hearts,
         url,
         Email,
@@ -173,7 +179,7 @@ Protected  = re.compile(
         separators,
         decorations,
         embeddedApostrophe,
-        Hashtag,  
+        Hashtag,
         AtMention
     ).decode('utf-8')), re.UNICODE)
 
@@ -182,7 +188,7 @@ Protected  = re.compile(
 # While also:   don't => don't
 # the first is considered "edge punctuation".
 # the second is word-internal punctuation -- don't want to mess with it.
-# BTO (2011-06): the edgepunct system seems to be the #1 source of problems these days.  
+# BTO (2011-06): the edgepunct system seems to be the #1 source of problems these days.
 # I remember it causing lots of trouble in the past as well.  Would be good to revisit or eliminate.
 
 # Note the 'smart quotes' (http://en.wikipedia.org/wiki/Smart_quotes)
@@ -206,7 +212,7 @@ def simpleTokenize(text):
     splitPunctText = splitEdgePunct(text)
 
     textLength = len(splitPunctText)
-    
+
     # BTO: the logic here got quite convoluted via the Scala porting detour
     # It would be good to switch back to a nice simple procedural style like in the Python version
     # ... Scala is such a pain.  Never again.
@@ -222,9 +228,9 @@ def simpleTokenize(text):
             badSpans.append( (match.start(), match.end()) )
 
     # Create a list of indices to create the "goods", which can be
-    # split. We are taking "bad" spans like 
-    #     List((2,5), (8,10)) 
-    # to create 
+    # split. We are taking "bad" spans like
+    #     List((2,5), (8,10))
+    # to create
     #     List(0, 2, 5, 8, 10, 12)
     # where, e.g., "12" here would be the textLength
     # has an even length and no indices are the same
@@ -255,7 +261,7 @@ def simpleTokenize(text):
     #for tok in zippedStr:
     #    splitStr.extend(splitToken(tok))
     #zippedStr = splitStr
-    
+
     return zippedStr
 
 def addAllnonempty(master, smaller):
@@ -289,7 +295,7 @@ def normalizeTextForTagger(text):
     return text
 
 # This is intended for raw tweet text -- we do some HTML entity unescaping before running the tagger.
-# 
+#
 # This function normalizes the input text BEFORE calling the tokenizer.
 # So the tokens you get back may not exactly correspond to
 # substrings of the original text.
