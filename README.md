@@ -1,6 +1,8 @@
 ark-twokenize-py
 ================
 
+**Note from scharfmn:**  This is a fork of [Myle Ott's port of twokenize](https://github.com/myleott/ark-twokenize-py), as described below. The single addition I have made is to add emoji support. Myle Ott's text follows.
+
 This is a crude Python port of the [Twokenize class from ark-tweet-nlp](https://github.com/brendano/ark-tweet-nlp/blob/master/src/cmu/arktweetnlp/Twokenize.java).
 
 It produces nearly identical output to the original Java tokenizer, except in a
